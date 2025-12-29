@@ -15,6 +15,21 @@
 
     const apiEndpoint = document.querySelector('meta[name="5x-api-endpoint"]').getAttribute('content');
 
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function sanitizeInput(input) {
+        return input.trim().replace(/[<>]/g, '');
+    }
+
     function togglePassword(input, icon, button) {
         const isPassword = input.type === 'password';
         input.type = isPassword ? 'text' : 'password';
@@ -29,6 +44,35 @@
 
     function hideError() {
         errorMessage.classList.remove('visible');
+    }
+
+    function validateUsername(username) {
+        if (username.length < 3 || username.length > 32) {
+            return 'Username must be between 3 and 32 characters.';
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+            return 'Username can only contain letters, numbers, underscore and dash.';
+        }
+        return null;
+    }
+
+    function validatePassword(password) {
+        if (password.length < 8) {
+            return 'Password must be at least 8 characters long.';
+        }
+        if (password.length > 128) {
+            return 'Password is too long.';
+        }
+        if (!/[a-z]/.test(password)) {
+            return 'Password must contain at least one lowercase letter.';
+        }
+        if (!/[A-Z]/.test(password)) {
+            return 'Password must contain at least one uppercase letter.';
+        }
+        if (!/[0-9]/.test(password)) {
+            return 'Password must contain at least one number.';
+        }
+        return null;
     }
 
     if (toggleButton && passwordInput && eyeIcon) {
@@ -56,17 +100,20 @@
             e.preventDefault();
             hideError();
 
-            const username = document.getElementById('username').value.trim();
+            const usernameRaw = document.getElementById('username').value;
+            const username = sanitizeInput(usernameRaw);
             const password = passwordInput.value;
             const passwordConfirm = passwordConfirmInput.value;
 
-            if (username.length < 3) {
-                showError('Username must be at least 3 characters long.');
+            const usernameError = validateUsername(username);
+            if (usernameError) {
+                showError(usernameError);
                 return;
             }
 
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters long.');
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                showError(passwordError);
                 return;
             }
 
