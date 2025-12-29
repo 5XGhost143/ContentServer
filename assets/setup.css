@@ -26,7 +26,7 @@ body {
 .login-header {
     display: flex;
     align-items: center;
-    margin-bottom: 36px;
+    margin-bottom: 24px;
 }
 
 .icon-box {
@@ -65,6 +65,20 @@ body {
     color: #6B6B6B;
 }
 
+.setup-info {
+    background-color: #2D2D30;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+    padding: 16px;
+    margin-bottom: 28px;
+}
+
+.setup-info p {
+    font-size: 13px;
+    color: #9D9D9D;
+    line-height: 1.5;
+}
+
 .form-group {
     margin-bottom: 20px;
 }
@@ -77,9 +91,15 @@ label {
     margin-bottom: 8px;
 }
 
+.hint {
+    display: block;
+    font-size: 11px;
+    color: #6B6B6B;
+    margin-top: 6px;
+}
+
 input[type="text"],
-input[type="password"],
-input[type="email"] {
+input[type="password"] {
     width: 100%;
     padding: 10px 12px;
     font-size: 14px;
@@ -92,24 +112,25 @@ input[type="email"] {
 }
 
 input[type="text"]::placeholder,
-input[type="password"]::placeholder,
-input[type="email"]::placeholder {
+input[type="password"]::placeholder {
     color: #5A5A5A;
     font-size: 13px;
 }
 
 input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="email"]:focus {
+input[type="password"]:focus {
     outline: none;
     border-color: #007ACC;
 }
 
 input[type="text"]:disabled,
-input[type="password"]:disabled,
-input[type="email"]:disabled {
+input[type="password"]:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+input.error {
+    border-color: #F48771;
 }
 
 .password-wrapper {
@@ -120,7 +141,8 @@ input[type="email"]:disabled {
     padding-right: 42px;
 }
 
-.toggle-password {
+.toggle-password,
+.toggle-password-confirm {
     position: absolute;
     right: 12px;
     top: 50%;
@@ -134,18 +156,21 @@ input[type="email"]:disabled {
     justify-content: center;
 }
 
-.toggle-password svg {
+.toggle-password svg,
+.toggle-password-confirm svg {
     width: 18px;
     height: 18px;
     fill: #6B6B6B;
     transition: fill 0.2s;
 }
 
-.toggle-password:hover svg {
+.toggle-password:hover svg,
+.toggle-password-confirm:hover svg {
     fill: #9D9D9D;
 }
 
-.toggle-password:focus {
+.toggle-password:focus,
+.toggle-password-confirm:focus {
     outline: 2px solid #007ACC;
     outline-offset: 2px;
     border-radius: 2px;
@@ -178,7 +203,7 @@ button[type="submit"] {
     border-radius: 2px;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-top: 28px;
+    margin-top: 8px;
 }
 
 button[type="submit"]:hover:not(:disabled) {
@@ -210,7 +235,7 @@ button[type="submit"]:focus {
     }
 
     .login-header {
-        margin-bottom: 32px;
+        margin-bottom: 20px;
     }
 
     .icon-box {
@@ -239,7 +264,7 @@ button[type="submit"]:focus {
     }
 
     .login-header {
-        margin-bottom: 28px;
+        margin-bottom: 18px;
         flex-wrap: wrap;
     }
 
@@ -262,20 +287,27 @@ button[type="submit"]:focus {
         font-size: 11px;
     }
 
+    .setup-info {
+        padding: 14px;
+        margin-bottom: 24px;
+    }
+
+    .setup-info p {
+        font-size: 12px;
+    }
+
     label {
         font-size: 12px;
     }
 
     input[type="text"],
-    input[type="password"],
-    input[type="email"] {
+    input[type="password"] {
         font-size: 16px;
         padding: 12px;
     }
 
     input[type="text"]::placeholder,
-    input[type="password"]::placeholder,
-    input[type="email"]::placeholder {
+    input[type="password"]::placeholder {
         font-size: 14px;
     }
 
@@ -286,14 +318,15 @@ button[type="submit"]:focus {
     button[type="submit"] {
         height: 42px;
         font-size: 14px;
-        margin-top: 24px;
     }
 
-    .toggle-password {
+    .toggle-password,
+    .toggle-password-confirm {
         right: 10px;
     }
 
-    .toggle-password svg {
+    .toggle-password svg,
+    .toggle-password-confirm svg {
         width: 20px;
         height: 20px;
     }
@@ -319,8 +352,7 @@ button[type="submit"]:focus {
     }
 
     input[type="text"]:focus,
-    input[type="password"]:focus,
-    input[type="email"]:focus {
+    input[type="password"]:focus {
         border-width: 2px;
     }
 }
