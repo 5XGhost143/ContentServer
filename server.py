@@ -236,7 +236,7 @@ async def admin_page():
     return FileResponse(ASSETS_DIR / "login.html")
 
 @app.post("/v1/api/setup")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 async def setup(request: Request, data: SetupRequest):
     admin = load_admin()
     if admin:
@@ -269,7 +269,7 @@ async def setup(request: Request, data: SetupRequest):
         )
 
 @app.post("/v1/api/login")
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 async def login(request: Request, data: LoginRequest):
     admin = load_admin()
     
