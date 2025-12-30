@@ -36,7 +36,7 @@ DATA_DIR = Path(__file__).parent / Path("data")
 ADMIN_FILE = DATA_DIR / "admin.json"
 SESSIONS_FILE = DATA_DIR / "sessions.json"
 USERS_FILE = DATA_DIR / "users.json"
-FILES_DIR = Path(__file__).parent / Path("files")
+FILES_DIR = DATA_DIR / "files"
 
 security = HTTPBearer(auto_error=False)
 
@@ -242,6 +242,24 @@ def get_user_files(user_id: int) -> List[dict]:
         except (json.JSONDecodeError, IOError):
             pass
     return files
+
+def get_all_files() -> List[dict]:
+    all_files = []
+    if not FILES_DIR.exists():
+        return all_files
+    
+    for user_dir in FILES_DIR.iterdir():
+        if user_dir.is_dir():
+            try:
+                user_id = int(user_dir.name)
+                files = get_user_files(user_id)
+                for file in files:
+                    file['owner_user_id'] = user_id
+                all_files.extend(files)
+            except ValueError:
+                continue
+    
+    return all_files
 
 def save_user_files(user_id: int, files: List[dict]):
     user_dir = FILES_DIR / str(user_id)
@@ -597,7 +615,13 @@ async def get_files(credentials: HTTPAuthorizationCredentials = Depends(security
         )
     
     user_id = session["user_id"]
-    files = get_user_files(user_id)
+    
+    if user_id == 1:
+        files = get_all_files()
+    else:
+        files = get_user_files(user_id)
+        for file in files:
+            file['owner_user_id'] = user_id
     
     return JSONResponse(content={"success": True, "files": files})
 
@@ -611,27 +635,54 @@ async def delete_file(file_id: str, credentials: HTTPAuthorizationCredentials = 
         )
     
     user_id = session["user_id"]
-    files = get_user_files(user_id)
     
-    file_to_delete = None
-    for f in files:
-        if f["file_id"] == file_id:
-            file_to_delete = f
-            break
-    
-    if not file_to_delete:
-        return JSONResponse(
-            status_code=404,
-            content={"success": False, "code": "5xsoftware.file_not_found"}
-        )
-    
-    user_dir = FILES_DIR / str(user_id)
-    file_path = user_dir / file_to_delete["stored_filename"]
-    if file_path.exists():
-        file_path.unlink()
-    
-    files = [f for f in files if f["file_id"] != file_id]
-    save_user_files(user_id, files)
+    if user_id == 1:
+        all_files = get_all_files()
+        file_to_delete = None
+        owner_id = None
+        
+        for f in all_files:
+            if f["file_id"] == file_id:
+                file_to_delete = f
+                owner_id = f.get("owner_user_id")
+                break
+        
+        if not file_to_delete or owner_id is None:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "code": "5xsoftware.file_not_found"}
+            )
+        
+        user_dir = FILES_DIR / str(owner_id)
+        file_path = user_dir / file_to_delete["stored_filename"]
+        if file_path.exists():
+            file_path.unlink()
+        
+        files = get_user_files(owner_id)
+        files = [f for f in files if f["file_id"] != file_id]
+        save_user_files(owner_id, files)
+    else:
+        files = get_user_files(user_id)
+        
+        file_to_delete = None
+        for f in files:
+            if f["file_id"] == file_id:
+                file_to_delete = f
+                break
+        
+        if not file_to_delete:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "code": "5xsoftware.file_not_found"}
+            )
+        
+        user_dir = FILES_DIR / str(user_id)
+        file_path = user_dir / file_to_delete["stored_filename"]
+        if file_path.exists():
+            file_path.unlink()
+        
+        files = [f for f in files if f["file_id"] != file_id]
+        save_user_files(user_id, files)
     
     return JSONResponse(content={"success": True})
 

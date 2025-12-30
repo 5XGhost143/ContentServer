@@ -172,10 +172,15 @@
                 const uploadDate = new Date(file.uploaded_at);
                 const fileSize = formatFileSize(file.size);
                 
-                let downloadUrl = `${window.location.origin}/${file.original_filename}?id=${currentUser.user_id}`;
+                const ownerId = file.owner_user_id;
+                let downloadUrl = `${window.location.origin}/${file.original_filename}?id=${ownerId}`;
                 if (file.is_private) {
                     downloadUrl += `&token=${file.token}`;
                 }
+                
+                const ownerLabel = currentUser.user_id === 1 && ownerId !== currentUser.user_id 
+                    ? `<span class="private-badge"><svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>User ${ownerId}</span>`
+                    : '';
                 
                 fileItem.innerHTML = `
                     <div class="file-info">
@@ -195,6 +200,7 @@
                                         Private
                                     </span>
                                 ` : ''}
+                                ${ownerLabel}
                             </div>
                             <div class="file-meta">${fileSize} • ${formatDate(uploadDate)}</div>
                         </div>
