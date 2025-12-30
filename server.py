@@ -130,6 +130,12 @@ def hash_password(password: str) -> str:
     salt = b"5xsoftware_salt_v1"
     return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000).hex()
 
+def get_device_fingerprint(request: Request) -> str:
+    user_agent = request.headers.get("user-agent", "")
+    client_ip = request.client.host if request.client else ""
+    fingerprint_data = f"{user_agent}|{client_ip}"
+    return hashlib.sha256(fingerprint_data.encode()).hexdigest()
+
 def load_admin():
     if ADMIN_FILE.exists():
         try:
@@ -193,19 +199,20 @@ def save_users(users_data: dict):
         json.dump(users_data, f)
     temp_file.replace(USERS_FILE)
 
-def create_session(username: str, user_id: int) -> str:
+def create_session(username: str, user_id: int, device_fingerprint: str) -> str:
     token = secrets.token_urlsafe(48)
     sessions = load_sessions()
     sessions[token] = {
         "username": username,
         "user_id": user_id,
+        "device_fingerprint": device_fingerprint,
         "created_at": datetime.now().isoformat(),
         "expires_at": (datetime.now() + timedelta(hours=12)).isoformat()
     }
     save_sessions(sessions)
     return token
 
-def verify_session(credentials: Optional[HTTPAuthorizationCredentials]) -> Optional[dict]:
+def verify_session(credentials: Optional[HTTPAuthorizationCredentials], request: Request) -> Optional[dict]:
     if not credentials:
         return None
     
@@ -217,6 +224,12 @@ def verify_session(credentials: Optional[HTTPAuthorizationCredentials]) -> Optio
     
     expires_at = datetime.fromisoformat(session["expires_at"])
     if datetime.now() > expires_at:
+        del sessions[credentials.credentials]
+        save_sessions(sessions)
+        return None
+    
+    current_fingerprint = get_device_fingerprint(request)
+    if session.get("device_fingerprint") != current_fingerprint:
         del sessions[credentials.credentials]
         save_sessions(sessions)
         return None
@@ -272,18 +285,13 @@ def save_user_files(user_id: int, files: List[dict]):
 
 @app.get("/admin")
 async def admin_page(request: Request):
-    print(f"[DEBUG] /admin accessed from {request.client.host}")
     admin = load_admin()
     if not admin:
-        print("[DEBUG] No admin found, serving setup.html")
         return FileResponse(ASSETS_DIR / "setup.html")
-    print("[DEBUG] Admin exists, serving login.html")
     return FileResponse(ASSETS_DIR / "login.html")
 
 @app.get("/panel")
 async def panel_page(request: Request):
-    print(f"[DEBUG] /panel accessed from {request.client.host}")
-    print("[DEBUG] Serving panel.html - JavaScript will handle authentication")
     return FileResponse(ASSETS_DIR / "panel.html")
 
 @app.get("/5x-content/{file_path:path}")
@@ -336,10 +344,8 @@ async def serve_5x_content(request: Request, file_path: str):
 @app.post("/v1/api/setup")
 @limiter.limit("20/minute")
 async def setup(request: Request, data: SetupRequest):
-    print(f"[DEBUG] Setup request from {request.client.host}")
     admin = load_admin()
     if admin:
-        print("[DEBUG] Admin already exists")
         return JSONResponse(
             status_code=400,
             content={
@@ -351,10 +357,8 @@ async def setup(request: Request, data: SetupRequest):
     try:
         password_hash = hash_password(data.password)
         save_admin(data.username, password_hash)
-        token = create_session(data.username, 1)
-        
-        print(f"[DEBUG] Admin created: {data.username}")
-        print(f"[DEBUG] Token created: {token[:20]}...")
+        device_fingerprint = get_device_fingerprint(request)
+        token = create_session(data.username, 1, device_fingerprint)
         
         return JSONResponse(
             content={
@@ -363,7 +367,6 @@ async def setup(request: Request, data: SetupRequest):
             }
         )
     except ValueError as e:
-        print(f"[DEBUG] Setup validation error: {e}")
         return JSONResponse(
             status_code=400,
             content={
@@ -375,11 +378,9 @@ async def setup(request: Request, data: SetupRequest):
 @app.post("/v1/api/login")
 @limiter.limit("20/minute")
 async def login(request: Request, data: LoginRequest):
-    print(f"[DEBUG] Login request from {request.client.host} for user: {data.username}")
     admin = load_admin()
     
     if not admin:
-        print("[DEBUG] No admin setup found")
         return JSONResponse(
             status_code=400,
             content={
@@ -390,10 +391,10 @@ async def login(request: Request, data: LoginRequest):
     
     try:
         password_hash = hash_password(data.password)
+        device_fingerprint = get_device_fingerprint(request)
         
         if admin["username"] == data.username and admin["password_hash"] == password_hash:
-            token = create_session(data.username, 1)
-            print(f"[DEBUG] Admin login successful, token: {token[:20]}...")
+            token = create_session(data.username, 1, device_fingerprint)
             return JSONResponse(
                 content={
                     "success": True,
@@ -404,8 +405,7 @@ async def login(request: Request, data: LoginRequest):
         users_data = load_users()
         for user in users_data["users"]:
             if user["username"] == data.username and user["password_hash"] == password_hash:
-                token = create_session(data.username, user["user_id"])
-                print(f"[DEBUG] User login successful: {data.username}, token: {token[:20]}...")
+                token = create_session(data.username, user["user_id"], device_fingerprint)
                 return JSONResponse(
                     content={
                         "success": True,
@@ -413,7 +413,6 @@ async def login(request: Request, data: LoginRequest):
                     }
                 )
         
-        print(f"[DEBUG] Invalid credentials for user: {data.username}")
         return JSONResponse(
             status_code=401,
             content={
@@ -422,7 +421,6 @@ async def login(request: Request, data: LoginRequest):
             }
         )
     except ValueError as e:
-        print(f"[DEBUG] Login validation error: {e}")
         return JSONResponse(
             status_code=401,
             content={
@@ -432,8 +430,8 @@ async def login(request: Request, data: LoginRequest):
         )
 
 @app.get("/v1/api/verify")
-async def verify(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    session = verify_session(credentials)
+async def verify(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    session = verify_session(credentials, request)
     if session:
         return JSONResponse(content={
             "success": True,
@@ -448,7 +446,7 @@ async def verify(credentials: HTTPAuthorizationCredentials = Depends(security)):
     )
 
 @app.post("/v1/api/logout")
-async def logout(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def logout(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
     if not credentials:
         return JSONResponse(
             status_code=401,
@@ -463,8 +461,8 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(security)):
     return JSONResponse(content={"success": True})
 
 @app.get("/v1/api/users")
-async def get_users(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    session = verify_session(credentials)
+async def get_users(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    session = verify_session(credentials, request)
     if not session or session["user_id"] != 1:
         return JSONResponse(
             status_code=403,
@@ -479,7 +477,7 @@ async def get_users(credentials: HTTPAuthorizationCredentials = Depends(security
 @app.post("/v1/api/users")
 @limiter.limit("20/minute")
 async def create_user(request: Request, data: CreateUserRequest, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    session = verify_session(credentials)
+    session = verify_session(credentials, request)
     if not session or session["user_id"] != 1:
         return JSONResponse(
             status_code=403,
@@ -517,8 +515,8 @@ async def create_user(request: Request, data: CreateUserRequest, credentials: HT
     return JSONResponse(content={"success": True, "user": {"user_id": new_user["user_id"], "username": new_user["username"]}})
 
 @app.delete("/v1/api/users/{user_id}")
-async def delete_user(user_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    session = verify_session(credentials)
+async def delete_user(request: Request, user_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    session = verify_session(credentials, request)
     if not session or session["user_id"] != 1:
         return JSONResponse(
             status_code=403,
@@ -548,10 +546,8 @@ async def upload_file(
     file: UploadFile = File(...),
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    print(f"[DEBUG] Upload request from {request.client.host}")
-    session = verify_session(credentials)
+    session = verify_session(credentials, request)
     if not session:
-        print("[DEBUG] Upload unauthorized")
         return JSONResponse(
             status_code=401,
             content={"success": False, "code": "5xsoftware.unauthorized"}
@@ -559,7 +555,6 @@ async def upload_file(
     
     form_data = await request.form()
     is_private = form_data.get('is_private', 'false').lower() == 'true'
-    print(f"[DEBUG] Upload is_private: {is_private}")
     
     user_id = session["user_id"]
     user_dir = FILES_DIR / str(user_id)
@@ -577,7 +572,6 @@ async def upload_file(
         f.write(content)
     
     file_token = secrets.token_urlsafe(32) if is_private else None
-    print(f"[DEBUG] Generated token: {file_token[:20] if file_token else 'None'}...")
     
     file_metadata = {
         "file_id": file_id,
@@ -597,8 +591,6 @@ async def upload_file(
     if is_private:
         download_url += f"&token={file_token}"
     
-    print(f"[DEBUG] File uploaded: {safe_filename}, private: {is_private}")
-    
     return JSONResponse(content={
         "success": True,
         "file": file_metadata,
@@ -606,8 +598,8 @@ async def upload_file(
     })
 
 @app.get("/v1/api/files")
-async def get_files(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    session = verify_session(credentials)
+async def get_files(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    session = verify_session(credentials, request)
     if not session:
         return JSONResponse(
             status_code=401,
@@ -626,8 +618,8 @@ async def get_files(credentials: HTTPAuthorizationCredentials = Depends(security
     return JSONResponse(content={"success": True, "files": files})
 
 @app.delete("/v1/api/files/{file_id}")
-async def delete_file(file_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    session = verify_session(credentials)
+async def delete_file(request: Request, file_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    session = verify_session(credentials, request)
     if not session:
         return JSONResponse(
             status_code=401,
