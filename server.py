@@ -443,6 +443,7 @@ async def verify(request: Request, credentials: HTTPAuthorizationCredentials = D
     if session:
         return JSONResponse(content={
             "success": True,
+            "code": "5xsoftware.auth.success",
             "authenticated": True,
             "username": session["username"],
             "user_id": session["user_id"]
@@ -450,7 +451,7 @@ async def verify(request: Request, credentials: HTTPAuthorizationCredentials = D
     
     return JSONResponse(
         status_code=401,
-        content={"success": False, "authenticated": False}
+        content={"success": False, "code": "5xsoftware.auth.failed", "authenticated": False}
     )
 
 @app.post("/v1/api/logout")
@@ -458,7 +459,7 @@ async def logout(request: Request, credentials: HTTPAuthorizationCredentials = D
     if not credentials:
         return JSONResponse(
             status_code=401,
-            content={"success": False}
+            content={"success": False, "code": "5xsoftware.logout.failed"}
         )
     
     sessions = load_sessions()
@@ -466,7 +467,7 @@ async def logout(request: Request, credentials: HTTPAuthorizationCredentials = D
         del sessions[credentials.credentials]
         save_sessions(sessions)
     
-    return JSONResponse(content={"success": True})
+    return JSONResponse(content={"success": True, "code": "5xsoftware.logout.success"})
 
 @app.get("/v1/api/users")
 async def get_users(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
