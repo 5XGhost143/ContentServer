@@ -29,6 +29,8 @@ body {
 .header-left {
     display: flex;
     align-items: center;
+    min-width: 0;
+    flex: 1;
 }
 
 .icon-box {
@@ -49,6 +51,11 @@ body {
     fill: #808080;
 }
 
+.header-text {
+    min-width: 0;
+    flex: 1;
+}
+
 .header-text h1 {
     font-size: 20px;
     font-weight: 600;
@@ -59,6 +66,9 @@ body {
 .header-text p {
     font-size: 12px;
     color: #6B6B6B;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .logout-btn {
@@ -74,6 +84,7 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
+    flex-shrink: 0;
 }
 
 .logout-btn svg {
@@ -89,6 +100,8 @@ body {
 .tabs {
     display: flex;
     border-bottom: 1px solid #3E3E42;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tab-btn {
@@ -104,6 +117,7 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .tab-btn svg {
@@ -262,6 +276,10 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
 .file-meta {
@@ -272,6 +290,7 @@ body {
 .file-actions {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .action-btn {
@@ -315,7 +334,7 @@ body {
     border-radius: 2px;
     font-size: 11px;
     color: #9D9D9D;
-    margin-left: 8px;
+    flex-shrink: 0;
 }
 
 .private-badge svg {
@@ -373,6 +392,8 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
+    flex: 1;
 }
 
 .user-avatar {
@@ -383,6 +404,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .user-avatar svg {
@@ -391,15 +413,26 @@ body {
     fill: #808080;
 }
 
+.user-details {
+    min-width: 0;
+    flex: 1;
+}
+
 .user-details h3 {
     font-size: 14px;
     color: #CCCCCC;
     margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .user-details p {
     font-size: 12px;
     color: #6B6B6B;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .loading {
@@ -437,6 +470,7 @@ body {
     z-index: 1000;
     align-items: center;
     justify-content: center;
+    padding: 20px;
 }
 
 .modal.active {
@@ -447,7 +481,7 @@ body {
     background-color: #252526;
     border: 1px solid #3E3E42;
     border-radius: 0;
-    width: 90%;
+    width: 100%;
     max-width: 500px;
 }
 
@@ -497,6 +531,8 @@ body {
     word-break: break-all;
     margin-bottom: 16px;
     font-family: 'Consolas', monospace;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .copy-btn {
@@ -597,34 +633,241 @@ body {
     display: block;
 }
 
-@media (max-width: 768px) {
-    body {
-        padding: 12px;
-    }
-
+@media (max-width: 1024px) {
     .panel-header {
-        padding: 20px;
-        flex-direction: column;
-        gap: 16px;
-        align-items: flex-start;
+        padding: 20px 24px;
     }
 
     .tab-content {
-        padding: 20px;
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+    }
+
+    .panel-container {
+        border: none;
+        border-radius: 0;
+    }
+
+    .panel-header {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .header-left {
+        gap: 12px;
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        margin-right: 0;
+    }
+
+    .icon-box svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .header-text h1 {
+        font-size: 18px;
+    }
+
+    .header-text p {
+        font-size: 11px;
+    }
+
+    .logout-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .logout-btn span {
+        display: none;
+    }
+
+    .tabs {
+        border-bottom: 1px solid #3E3E42;
+    }
+
+    .tab-btn {
+        padding: 14px 20px;
+        font-size: 12px;
+    }
+
+    .tab-content {
+        padding: 16px;
     }
 
     .upload-area {
-        padding: 32px 20px;
+        padding: 32px 16px;
+    }
+
+    .upload-area svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    .upload-area p {
+        font-size: 15px;
+    }
+
+    .upload-area span {
+        font-size: 12px;
     }
 
     .file-item {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 12px;
+        padding: 12px;
+    }
+
+    .file-info {
+        width: 100%;
+    }
+
+    .file-name {
+        white-space: normal;
+        word-break: break-word;
     }
 
     .file-actions {
         width: 100%;
         justify-content: flex-end;
+        padding-top: 8px;
+        border-top: 1px solid #3E3E42;
+    }
+
+    .action-btn {
+        flex: 1;
+        max-width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .user-info {
+        width: 100%;
+    }
+
+    .user-details h3 {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .user-details p {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .create-user-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal {
+        padding: 12px;
+    }
+
+    .modal-header {
+        padding: 16px;
+    }
+
+    .modal-header h2 {
+        font-size: 15px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .url-display {
+        font-size: 12px;
+        padding: 10px;
+        max-height: 150px;
+    }
+
+    .empty-state {
+        padding: 32px 16px;
+    }
+
+    .empty-state svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .loading {
+        padding: 32px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-text h1 {
+        font-size: 16px;
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+        font-size: 11px;
+        gap: 6px;
+    }
+
+    .tab-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .file-icon,
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .file-icon svg,
+    .user-avatar svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .file-name,
+    .user-details h3 {
+        font-size: 13px;
+    }
+
+    .file-meta,
+    .user-details p {
+        font-size: 11px;
+    }
+
+    .action-btn {
+        padding: 6px;
+    }
+
+    .action-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .private-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+
+    .private-badge svg {
+        width: 10px;
+        height: 10px;
     }
 }

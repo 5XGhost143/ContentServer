@@ -200,7 +200,7 @@ def create_session(username: str, user_id: int) -> str:
         "username": username,
         "user_id": user_id,
         "created_at": datetime.now().isoformat(),
-        "expires_at": (datetime.now() + timedelta(days=7)).isoformat()
+        "expires_at": (datetime.now() + timedelta(hours=12)).isoformat()
     }
     save_sessions(sessions)
     return token
