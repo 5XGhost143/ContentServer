@@ -1,0 +1,630 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1E1E1E;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.panel-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #252526;
+    border: 1px solid #3E3E42;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid #3E3E42;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.icon-box {
+    width: 48px;
+    height: 48px;
+    background-color: #2D2D30;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.icon-box svg {
+    width: 28px;
+    height: 28px;
+    fill: #808080;
+}
+
+.header-text h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #CCCCCC;
+    margin-bottom: 2px;
+}
+
+.header-text p {
+    font-size: 12px;
+    color: #6B6B6B;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: #2D2D30;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+    color: #CCCCCC;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.logout-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: #CCCCCC;
+}
+
+.logout-btn:hover {
+    background-color: #3E3E42;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #3E3E42;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #9D9D9D;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: #9D9D9D;
+}
+
+.tab-btn:hover {
+    color: #CCCCCC;
+    background-color: #2D2D30;
+}
+
+.tab-btn:hover svg {
+    fill: #CCCCCC;
+}
+
+.tab-btn.active {
+    color: #CCCCCC;
+    border-bottom-color: #007ACC;
+}
+
+.tab-btn.active svg {
+    fill: #007ACC;
+}
+
+.tab-content {
+    display: none;
+    padding: 32px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.upload-section {
+    margin-bottom: 32px;
+}
+
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    border: 2px dashed #3E3E42;
+    border-radius: 4px;
+    background-color: #2D2D30;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upload-area:hover {
+    border-color: #007ACC;
+    background-color: #2A2D2E;
+}
+
+.upload-area.dragging {
+    border-color: #007ACC;
+    background-color: #1E3A52;
+}
+
+.upload-area svg {
+    width: 48px;
+    height: 48px;
+    fill: #6B6B6B;
+    margin-bottom: 16px;
+}
+
+.upload-area p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #CCCCCC;
+    margin-bottom: 4px;
+}
+
+.upload-area span {
+    font-size: 13px;
+    color: #6B6B6B;
+}
+
+.upload-options {
+    margin-top: 16px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #9D9D9D;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: #2D2D30;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+}
+
+.file-item:hover {
+    background-color: #323233;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.file-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #3E3E42;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.file-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: #808080;
+}
+
+.file-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    font-size: 14px;
+    color: #CCCCCC;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-meta {
+    font-size: 12px;
+    color: #6B6B6B;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px;
+    background: none;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: #9D9D9D;
+}
+
+.action-btn:hover {
+    background-color: #3E3E42;
+}
+
+.action-btn:hover svg {
+    fill: #CCCCCC;
+}
+
+.action-btn.delete:hover {
+    background-color: #5A1F1F;
+    border-color: #5A1F1F;
+}
+
+.action-btn.delete:hover svg {
+    fill: #F48771;
+}
+
+.private-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background-color: #3E3E42;
+    border-radius: 2px;
+    font-size: 11px;
+    color: #9D9D9D;
+    margin-left: 8px;
+}
+
+.private-badge svg {
+    width: 12px;
+    height: 12px;
+    fill: #9D9D9D;
+}
+
+.user-section {
+    margin-bottom: 24px;
+}
+
+.create-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #0E639C;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.create-user-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: white;
+}
+
+.create-user-btn:hover {
+    background-color: #1177BB;
+}
+
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: #2D2D30;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #3E3E42;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-avatar svg {
+    width: 24px;
+    height: 24px;
+    fill: #808080;
+}
+
+.user-details h3 {
+    font-size: 14px;
+    color: #CCCCCC;
+    margin-bottom: 2px;
+}
+
+.user-details p {
+    font-size: 12px;
+    color: #6B6B6B;
+}
+
+.loading {
+    padding: 48px;
+    text-align: center;
+    font-size: 14px;
+    color: #6B6B6B;
+}
+
+.empty-state {
+    padding: 48px;
+    text-align: center;
+}
+
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    fill: #3E3E42;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: #6B6B6B;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background-color: #252526;
+    border: 1px solid #3E3E42;
+    border-radius: 0;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #3E3E42;
+}
+
+.modal-header h2 {
+    font-size: 16px;
+    color: #CCCCCC;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.close-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: #9D9D9D;
+    transition: fill 0.2s;
+}
+
+.close-btn:hover svg {
+    fill: #CCCCCC;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.url-display {
+    padding: 12px;
+    background-color: #2D2D30;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+    font-size: 13px;
+    color: #CCCCCC;
+    word-break: break-all;
+    margin-bottom: 16px;
+    font-family: 'Consolas', monospace;
+}
+
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #0E639C;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    justify-content: center;
+}
+
+.copy-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: white;
+}
+
+.copy-btn:hover {
+    background-color: #1177BB;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9D9D9D;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #2D2D30;
+    border: 1px solid #3E3E42;
+    border-radius: 2px;
+    color: #CCCCCC;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007ACC;
+}
+
+.form-group input::placeholder {
+    color: #5A5A5A;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #0E639C;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #1177BB;
+}
+
+.submit-btn:disabled {
+    background-color: #3E3E42;
+    color: #6B6B6B;
+    cursor: not-allowed;
+}
+
+.error-message {
+    display: none;
+    background-color: #3E2723;
+    border: 1px solid #F48771;
+    border-radius: 2px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #F48771;
+}
+
+.error-message.visible {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+
+    .panel-header {
+        padding: 20px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .tab-content {
+        padding: 20px;
+    }
+
+    .upload-area {
+        padding: 32px 20px;
+    }
+
+    .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .file-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

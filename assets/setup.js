@@ -1,6 +1,33 @@
 (function() {
     'use strict';
 
+    console.log('[DEBUG] Setup page loaded');
+
+    const token = localStorage.getItem('admin_token');
+    console.log('[DEBUG] Token exists:', !!token);
+
+    if (token) {
+        console.log('[DEBUG] Token found, checking if valid...');
+        const apiEndpoint = document.querySelector('meta[name="5x-api-endpoint"]').getAttribute('content');
+        
+        fetch(`${apiEndpoint}/verify`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).then(response => {
+            if (response.ok) {
+                console.log('[DEBUG] Token valid, redirecting to /panel');
+                window.location.href = '/panel';
+            } else {
+                console.log('[DEBUG] Token invalid, removing and staying on setup');
+                localStorage.removeItem('admin_token');
+            }
+        }).catch(err => {
+            console.log('[DEBUG] Token verification error:', err);
+            localStorage.removeItem('admin_token');
+        });
+    }
+
     const toggleButton = document.querySelector('.toggle-password');
     const toggleButtonConfirm = document.querySelector('.toggle-password-confirm');
     const passwordInput = document.getElementById('password');
@@ -100,10 +127,14 @@
             e.preventDefault();
             hideError();
 
+            console.log('[DEBUG] Setup form submitted');
+
             const usernameRaw = document.getElementById('username').value;
             const username = sanitizeInput(usernameRaw);
             const password = passwordInput.value;
             const passwordConfirm = passwordConfirmInput.value;
+
+            console.log('[DEBUG] Username:', username);
 
             const usernameError = validateUsername(username);
             if (usernameError) {
@@ -130,6 +161,7 @@
             submitButton.textContent = 'Creating account...';
 
             try {
+                console.log('[DEBUG] Sending setup request to:', `${apiEndpoint}/setup`);
                 const response = await fetch(`${apiEndpoint}/setup`, {
                     method: 'POST',
                     headers: {
@@ -138,11 +170,16 @@
                     body: JSON.stringify({ username, password })
                 });
 
+                console.log('[DEBUG] Setup response status:', response.status);
                 const data = await response.json();
+                console.log('[DEBUG] Setup response data:', data);
 
                 if (response.ok && data.success) {
+                    console.log('[DEBUG] Setup successful, storing token:', data.token.substring(0, 20) + '...');
                     localStorage.setItem('admin_token', data.token);
-                    window.location.href = '/admin';
+                    console.log('[DEBUG] Token stored in localStorage');
+                    console.log('[DEBUG] Redirecting to /panel');
+                    window.location.href = '/panel';
                 } else {
                     let errorMsg = 'Setup failed. Please try again.';
                     if (data.code === '5xsoftware.already_setup') {
@@ -153,6 +190,7 @@
                     showError(errorMsg);
                 }
             } catch (err) {
+                console.log('[DEBUG] Setup error:', err);
                 showError('Network error. Please check your connection.');
             } finally {
                 submitButton.disabled = false;

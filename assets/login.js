@@ -1,6 +1,33 @@
 (function() {
     'use strict';
 
+    console.log('[DEBUG] Login page loaded');
+
+    const token = localStorage.getItem('admin_token');
+    console.log('[DEBUG] Token exists:', !!token);
+
+    if (token) {
+        console.log('[DEBUG] Token found, checking if valid...');
+        const apiEndpoint = document.querySelector('meta[name="5x-api-endpoint"]').getAttribute('content');
+        
+        fetch(`${apiEndpoint}/verify`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).then(response => {
+            if (response.ok) {
+                console.log('[DEBUG] Token valid, redirecting to /panel');
+                window.location.href = '/panel';
+            } else {
+                console.log('[DEBUG] Token invalid, removing and staying on login');
+                localStorage.removeItem('admin_token');
+            }
+        }).catch(err => {
+            console.log('[DEBUG] Token verification error:', err);
+            localStorage.removeItem('admin_token');
+        });
+    }
+
     const toggleButton = document.querySelector('.toggle-password');
     const passwordInput = document.getElementById('password');
     const eyeIcon = document.getElementById('eye-icon');
@@ -66,6 +93,8 @@
             event.preventDefault();
             hideError();
 
+            console.log('[DEBUG] Login form submitted');
+
             if (checkLockout()) {
                 return;
             }
@@ -73,6 +102,8 @@
             const usernameRaw = document.getElementById('username').value;
             const username = sanitizeInput(usernameRaw);
             const password = passwordInput.value;
+
+            console.log('[DEBUG] Username:', username);
 
             if (!username) {
                 document.getElementById('username').focus();
@@ -89,6 +120,7 @@
             submitButton.textContent = 'Logging in...';
 
             try {
+                console.log('[DEBUG] Sending login request to:', `${apiEndpoint}/login`);
                 const response = await fetch(`${apiEndpoint}/login`, {
                     method: 'POST',
                     headers: {
@@ -97,12 +129,17 @@
                     body: JSON.stringify({ username, password })
                 });
 
+                console.log('[DEBUG] Login response status:', response.status);
                 const data = await response.json();
+                console.log('[DEBUG] Login response data:', data);
 
                 if (response.ok && data.success) {
                     loginAttempts = 0;
+                    console.log('[DEBUG] Login successful, storing token:', data.token.substring(0, 20) + '...');
                     localStorage.setItem('admin_token', data.token);
-                    window.location.href = '/admin';
+                    console.log('[DEBUG] Token stored in localStorage');
+                    console.log('[DEBUG] Redirecting to /panel');
+                    window.location.href = '/panel';
                 } else {
                     loginAttempts++;
                     
@@ -121,6 +158,7 @@
                     }
                 }
             } catch (err) {
+                console.log('[DEBUG] Login error:', err);
                 showError('Network error. Please check your connection.');
             } finally {
                 submitButton.disabled = false;

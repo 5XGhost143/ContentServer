@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="5x-api-endpoint" content="/v1/api">
+    <title>Admin Panel - Content Server</title>
+    <link rel="stylesheet" href="/5x-content/panel.css">
+</head>
+<body>
+    <div class="panel-container">
+        <div class="panel-header">
+            <div class="header-left">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,16 6,15.47C6,13.82 8.71,12.47 12,12.47C15.29,12.47 18,13.79 18,15.47C17.76,16 17.47,16.5 17.13,17Z"/>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h1>Content Server</h1>
+                    <p id="username-display"></p>
+                </div>
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
+                </svg>
+                Logout
+            </button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="files">
+                <svg viewBox="0 0 24 24">
+                    <path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z"/>
+                </svg>
+                Files
+            </button>
+            <button class="tab-btn" data-tab="users" id="users-tab" style="display: none;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"/>
+                </svg>
+                Users
+            </button>
+        </div>
+
+        <div class="tab-content active" id="files-tab">
+            <div class="upload-section">
+                <div class="upload-area" id="upload-area">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"/>
+                    </svg>
+                    <p>Upload File</p>
+                    <span>Click or drag here</span>
+                    <input type="file" id="file-input" hidden>
+                </div>
+                <div class="upload-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="private-checkbox">
+                        <span>Private Upload (Token required)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="files-list" id="files-list">
+                <div class="loading">Loading files...</div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="users-tab-content">
+            <div class="user-section">
+                <button class="create-user-btn" id="create-user-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15,14C12.33,14 7,15.33 7,18V20H23V18C23,15.33 17.67,14 15,14M6,10V7H4V10H1V12H4V15H6V12H9V10M15,12A4,4 0 0,0 19,8A4,4 0 0,0 15,4A4,4 0 0,0 11,8A4,4 0 0,0 15,12Z"/>
+                    </svg>
+                    Create New User
+                </button>
+            </div>
+
+            <div class="users-list" id="users-list">
+                <div class="loading">Loading users...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="url-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Download URL</h2>
+                <button class="close-btn" id="close-modal">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="url-display" id="url-display"></div>
+                <button class="copy-btn" id="copy-url-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+                    </svg>
+                    Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="create-user-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New User</h2>
+                <button class="close-btn" id="close-user-modal">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="create-user-form">
+                    <div class="form-group">
+                        <label for="new-username">Username</label>
+                        <input type="text" id="new-username" placeholder="Enter username" required minlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">Password</label>
+                        <input type="password" id="new-password" placeholder="Enter password" required minlength="8">
+                    </div>
+                    <div class="error-message" id="user-error-message"></div>
+                    <button type="submit" class="submit-btn">Create User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/5x-content/panel.js"></script>
+</body>
+</html>
