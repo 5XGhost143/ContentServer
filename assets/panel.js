@@ -138,14 +138,14 @@
                     fileInput.value = '';
                     privateCheckbox.checked = false;
                 } else {
-                    alert('Upload failed');
+                    alert('Upload failed. Please try reloading the page.');
                 }
             });
             
             xhr.addEventListener('error', () => {
                 uploadArea.classList.remove('uploading');
                 uploadProgress.classList.remove('active');
-                alert('Upload failed');
+                alert('Upload failed. Please try reloading the page.');
             });
             
             xhr.open('POST', `${apiEndpoint}/upload`);
@@ -155,7 +155,7 @@
         } catch (err) {
             uploadArea.classList.remove('uploading');
             uploadProgress.classList.remove('active');
-            alert('Upload failed');
+            alert('Upload failed. Please try reloading the page.');
         }
     }
 
@@ -171,7 +171,7 @@
             });
             
             if (!response.ok) {
-                filesList.innerHTML = '<div class="empty-state"><p>Error loading files</p></div>';
+                filesList.innerHTML = '<div class="empty-state"><p>Error loading files. Please try reloading the page.</p></div>';
                 return;
             }
             
@@ -280,7 +280,7 @@
                 filesList.appendChild(fileItem);
             });
         } catch (err) {
-            filesList.innerHTML = '<div class="empty-state"><p>Error loading files</p></div>';
+            filesList.innerHTML = '<div class="empty-state"><p>Error loading files. Please try reloading the page.</p></div>';
         }
     }
 
@@ -296,7 +296,7 @@
             });
             
             if (!response.ok) {
-                usersList.innerHTML = '<div class="empty-state"><p>Error loading users</p></div>';
+                usersList.innerHTML = '<div class="empty-state"><p>Error loading users. Please try reloading the page.</p></div>';
                 return;
             }
             
@@ -368,7 +368,7 @@
                 usersList.appendChild(userItem);
             });
         } catch (err) {
-            usersList.innerHTML = '<div class="empty-state"><p>Error loading users</p></div>';
+            usersList.innerHTML = '<div class="empty-state"><p>Error loading users. Please try reloading the page.</p></div>';
         }
     }
 
