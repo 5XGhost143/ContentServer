@@ -21,6 +21,14 @@ import mimetypes
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["localhost", "127.0.0.1", "*.local", "content.ghost143.de"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -567,9 +575,11 @@ async def upload_file(
     
     file_path = user_dir / stored_filename
     
-    content = await file.read()
+    total_size = 0
     with open(file_path, 'wb') as f:
-        f.write(content)
+        while chunk := await file.read(1024 * 1024):
+            total_size += len(chunk)
+            f.write(chunk)
     
     file_token = secrets.token_urlsafe(32) if is_private else None
     
@@ -577,7 +587,7 @@ async def upload_file(
         "file_id": file_id,
         "original_filename": safe_filename,
         "stored_filename": stored_filename,
-        "size": len(content),
+        "size": total_size,
         "uploaded_at": datetime.now().isoformat(),
         "is_private": is_private,
         "token": file_token
@@ -740,4 +750,4 @@ if __name__ == "__main__":
     ASSETS_DIR.mkdir(exist_ok=True)
     DATA_DIR.mkdir(exist_ok=True)
     FILES_DIR.mkdir(exist_ok=True)
-    uvicorn.run(app, host="0.0.0.0", port=9123)
+    uvicorn.run(app, host="0.0.0.0", port=9123, limit_max_requests=None, timeout_keep_alive=300)

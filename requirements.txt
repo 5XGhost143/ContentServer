@@ -2,3 +2,4 @@ fastapi
 uvicorn[standard]
 slowapi
 limits
+python-multipart

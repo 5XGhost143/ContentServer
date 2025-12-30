@@ -74,6 +74,10 @@
     const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('file-input');
     const privateCheckbox = document.getElementById('private-checkbox');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressFilename = document.getElementById('progress-filename');
+    const progressPercentage = document.getElementById('progress-percentage');
 
     uploadArea.addEventListener('click', () => fileInput.click());
 
@@ -106,29 +110,51 @@
         formData.append('file', file);
         formData.append('is_private', privateCheckbox.checked ? 'true' : 'false');
         
+        uploadArea.classList.add('uploading');
+        uploadProgress.classList.add('active');
+        progressFilename.textContent = file.name;
+        progressBar.style.width = '0%';
+        progressPercentage.textContent = '0%';
+        
         try {
-            const response = await fetch(`${apiEndpoint}/upload`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressPercentage.textContent = percent + '%';
+                }
             });
             
-            if (!response.ok) {
+            xhr.addEventListener('load', async () => {
+                uploadArea.classList.remove('uploading');
+                uploadProgress.classList.remove('active');
+                
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    showUrlModal(window.location.origin + '/' + data.download_url);
+                    loadFiles();
+                    fileInput.value = '';
+                    privateCheckbox.checked = false;
+                } else {
+                    alert('Upload failed');
+                }
+            });
+            
+            xhr.addEventListener('error', () => {
+                uploadArea.classList.remove('uploading');
+                uploadProgress.classList.remove('active');
                 alert('Upload failed');
-                return;
-            }
+            });
             
-            const data = await response.json();
+            xhr.open('POST', `${apiEndpoint}/upload`);
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            xhr.send(formData);
             
-            showUrlModal(window.location.origin + '/' + data.download_url);
-            
-            loadFiles();
-            
-            fileInput.value = '';
-            privateCheckbox.checked = false;
         } catch (err) {
+            uploadArea.classList.remove('uploading');
+            uploadProgress.classList.remove('active');
             alert('Upload failed');
         }
     }
@@ -157,7 +183,7 @@
                         <svg viewBox="0 0 24 24">
                             <path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z"/>
                         </svg>
-                        <p>No files available</p>
+                        <p>No files uploaded yet</p>
                     </div>
                 `;
                 return;
@@ -231,7 +257,7 @@
                 
                 const deleteBtn = fileItem.querySelector('.action-btn.delete');
                 deleteBtn.addEventListener('click', async () => {
-                    if (!confirm('Really delete this file?')) return;
+                    if (!confirm('Delete this file permanently?')) return;
                     
                     try {
                         const response = await fetch(`${apiEndpoint}/files/${deleteBtn.dataset.fileId}`, {
@@ -282,7 +308,7 @@
                         <svg viewBox="0 0 24 24">
                             <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
                         </svg>
-                        <p>No users available</p>
+                        <p>No users created yet</p>
                     </div>
                 `;
                 return;
@@ -319,7 +345,7 @@
                 
                 const deleteBtn = userItem.querySelector('.action-btn.delete');
                 deleteBtn.addEventListener('click', async () => {
-                    if (!confirm('Really delete this user?')) return;
+                    if (!confirm('Delete this user permanently?')) return;
                     
                     try {
                         const response = await fetch(`${apiEndpoint}/users/${deleteBtn.dataset.userId}`, {
@@ -416,7 +442,7 @@
                 if (data.code === '5xsoftware.username_exists') {
                     errorMsg.textContent = 'Username already exists';
                 } else {
-                    errorMsg.textContent = 'Error creating user';
+                    errorMsg.textContent = 'Failed to create user';
                 }
                 errorMsg.classList.add('visible');
                 return;
