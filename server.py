@@ -8,7 +8,7 @@ import uvicorn
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 import hashlib
 import secrets
 import json
@@ -40,7 +40,8 @@ class SetupRequest(BaseModel):
     username: str
     password: str
 
-    @validator('username')
+    @field_validator('username')
+    @classmethod
     def validate_username(cls, v):
         v = v.strip()
         if len(v) < 3 or len(v) > 32:
@@ -49,7 +50,8 @@ class SetupRequest(BaseModel):
             raise ValueError('Username can only contain letters, numbers, underscore and dash')
         return v
 
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8 or len(v) > 128:
             raise ValueError('Password must be between 8 and 128 characters')
@@ -59,14 +61,16 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
-    @validator('username')
+    @field_validator('username')
+    @classmethod
     def validate_username(cls, v):
         v = v.strip()
         if len(v) < 3 or len(v) > 32:
             raise ValueError('Invalid credentials')
         return v
 
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8 or len(v) > 128:
             raise ValueError('Invalid credentials')
