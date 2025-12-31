@@ -5,10 +5,37 @@
     const token = localStorage.getItem('admin_token');
     
     let currentUser = null;
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY = 1000;
 
     if (!token) {
         window.location.href = '/admin';
         return;
+    }
+
+    async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url, options);
+                if (response.ok) {
+                    return response;
+                }
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error('Unauthorized');
+                }
+                if (i === retries - 1) {
+                    return response;
+                }
+            } catch (err) {
+                if (err.message === 'Unauthorized') {
+                    throw err;
+                }
+                if (i === retries - 1) {
+                    throw err;
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (i + 1)));
+        }
     }
 
     async function verifyAuth() {
@@ -164,7 +191,7 @@
         filesList.innerHTML = '<div class="loading">Loading files...</div>';
         
         try {
-            const response = await fetch(`${apiEndpoint}/files`, {
+            const response = await fetchWithRetry(`${apiEndpoint}/files`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -289,7 +316,7 @@
         usersList.innerHTML = '<div class="loading">Loading users...</div>';
         
         try {
-            const response = await fetch(`${apiEndpoint}/users`, {
+            const response = await fetchWithRetry(`${apiEndpoint}/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

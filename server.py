@@ -46,6 +46,19 @@ SESSIONS_FILE = DATA_DIR / "sessions.json"
 USERS_FILE = DATA_DIR / "users.json"
 FILES_DIR = DATA_DIR / "files"
 
+INLINE_DISPLAY_TYPES = {
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp',
+    'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime',
+    'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac', 'audio/mp4',
+    'application/pdf',
+    'text/plain', 'text/css', 'text/javascript', 'application/javascript',
+    'application/json', 'application/xml', 'text/xml', 'text/csv'
+}
+
+DOWNLOAD_EXTENSIONS = {
+    '.html', '.htm', '.php', '.asp', '.aspx', '.jsp', '.xhtml'
+}
+
 security = HTTPBearer(auto_error=False)
 
 class SetupRequest(BaseModel):
@@ -290,6 +303,12 @@ def save_user_files(user_id: int, files: List[dict]):
     with open(temp_file, 'w') as f:
         json.dump(files, f)
     temp_file.replace(metadata_file)
+
+def should_display_inline(mime_type: str, file_path: str) -> bool:
+    file_ext = Path(file_path).suffix.lower()
+    if file_ext in DOWNLOAD_EXTENSIONS:
+        return False
+    return mime_type in INLINE_DISPLAY_TYPES
 
 @app.get("/admin")
 async def admin_page(request: Request):
@@ -727,11 +746,17 @@ async def serve_file(request: Request, file_path: str, id: Optional[int] = None,
         if not mime_type:
             mime_type = "application/octet-stream"
         
-        return FileResponse(
-            full_file_path,
-            media_type=mime_type,
-            filename=file_metadata["original_filename"]
-        )
+        if should_display_inline(mime_type, file_path):
+            return FileResponse(
+                full_file_path,
+                media_type=mime_type
+            )
+        else:
+            return FileResponse(
+                full_file_path,
+                media_type=mime_type,
+                filename=file_metadata["original_filename"]
+            )
     
     file_path = sanitize_path(file_path)
     full_path = ASSETS_DIR / file_path
