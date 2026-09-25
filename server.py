@@ -21,8 +21,10 @@ import mimetypes
 import os
 app = FastAPI()
 
+# these ones are made with AI 
 app.add_middleware(CORSMiddleware, allow_origins=['localhost', '127.0.0.1', '*.local', 'content.ghost143.de'], allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
 limiter = Limiter(key_func=get_remote_address)
+# these ones are made with AI 
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
